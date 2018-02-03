@@ -20,12 +20,18 @@ function createWorld() {
   return world;
 }
 
+
+// Helpers
+
 function sumVectors(v1, v2) {
   return {
     x: v1.x + v2.x,
     y: v1.y + v2.y,
   }
 }
+
+
+// Simulation
 
 function move(worm, direction) {
   const head = worm[0];
@@ -34,9 +40,27 @@ function move(worm, direction) {
   return [newHead, ...newTail];
 }
 
-function simulateWorld(world) {
-  world.worm = move(world.worm, world.direction);
+function hitsWalls(worm, world) {
+  for (const block of worm) {
+    if (block.x < 0 || block.x >= world.width ||
+      block.y < 0 || block.y >= world.height) {
+      return true;
+    }
+  }
+  return false;
 }
+
+function simulateWorld(world) {
+  const newWorm = move(world.worm, world.direction);
+  if (hitsWalls(newWorm, world)) {
+    world.gameOver = true;
+  } else {
+    world.worm = newWorm;
+  }
+}
+
+
+// Rendering
 
 function renderWorld(world, canvas) {
   const ctx = canvas.getContext('2d');
@@ -54,7 +78,23 @@ function renderWorld(world, canvas) {
   for (const block of world.worm) {
     ctx.fillRect(block.x * cellWidth, block.y * cellHeight, cellWidth, cellHeight);
   }
+
+  // game over
+  if (world.gameOver) {
+    ctx.font = 'bold 48px sans-serif';
+    ctx.fillStyle = '#0000FF';
+    ctx.textAlign = 'center';
+    ctx.fillText('Game Over', canvasWidth / 2, canvasHeight / 2);
+
+    ctx.font = '22px sans-serif';
+    ctx.fillStyle = '#0000FF';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Score: ${world.worm.length}`, canvasWidth / 2, canvasHeight / 2 + 36);
+  }
 }
+
+
+// Main
 
 function initGame(canvas) {
   const world = createWorld();
@@ -66,6 +106,9 @@ function initGame(canvas) {
   setInterval(() => simulateWorld(world), 1000.0 / simulationHz);
 
   document.addEventListener('keydown', (event) => {
+    if (world.gameOver) {
+      return; // prevent any further input
+    }
     if (event.key === 'ArrowUp') {
       world.direction = UP
     }
