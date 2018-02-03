@@ -124,6 +124,17 @@ function createWorld() {
   return world;
 }
 
+function drawOutlinedText(ctx, {text, x, y, font, lineWidth}) {
+  ctx.font = font;
+  ctx.textAlign = 'center';
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = lineWidth;
+  ctx.lineJoin = 'round';
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText(text, x, y);
+}
+
 function renderWorld(world, canvas) {
   const ctx = canvas.getContext('2d');
   const canvasWidth = canvas.width = canvas.clientWidth;
@@ -155,23 +166,20 @@ function renderWorld(world, canvas) {
 
   // game over
   if (world.gameOver) {
-    ctx.font = 'bold 48px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 8;
-    ctx.lineJoin = 'round';
-    ctx.strokeText('Game Over', canvasWidth / 2, canvasHeight / 2);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillText('Game Over', canvasWidth / 2, canvasHeight / 2);
-
-    ctx.font = '22px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 6;
-    ctx.lineJoin = 'round';
-    ctx.strokeText(`Score: ${world.score}`, canvasWidth / 2, canvasHeight / 2 + 36);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillText(`Score: ${world.score}`, canvasWidth / 2, canvasHeight / 2 + 36);
+    drawOutlinedText(ctx, {
+      text: "Game Over",
+      font: 'bold 48px sans-serif',
+      lineWidth: 8,
+      x: canvasWidth / 2,
+      y: canvasHeight / 2,
+    });
+    drawOutlinedText(ctx, {
+      text: `Score: ${world.score}`,
+      font: '22px sans-serif',
+      lineWidth: 6,
+      x: canvasWidth / 2,
+      y: canvasHeight / 2 + 36,
+    });
   }
 }
 
