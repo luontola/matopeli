@@ -45,6 +45,13 @@ function createWorld() {
   };
   world.addTarget();
 
+  world.changeDirection = (direction) => {
+    const turn180 = isEqual(sumVectors(world.direction, direction), {x: 0, y: 0});
+    if (!turn180) {
+      world.direction = direction;
+    }
+  };
+
   return world;
 }
 
@@ -152,17 +159,17 @@ function initGame(canvas) {
     if (event.code === 'Space') {
       world = createWorld();
     } else if (event.code === 'ArrowUp') {
-      world.direction = UP;
+      world.changeDirection(UP);
     } else if (event.code === 'ArrowDown') {
-      world.direction = DOWN;
+      world.changeDirection(DOWN);
     } else if (event.code === 'ArrowLeft') {
-      world.direction = LEFT;
+      world.changeDirection(LEFT);
     } else if (event.code === 'ArrowRight') {
-      world.direction = RIGHT;
+      world.changeDirection(RIGHT);
     } else {
       return;
     }
-    event.preventDefault(); // prevent game keys from scrolling the window 
+    event.preventDefault(); // prevent game keys from scrolling the window
   });
 
   console.log("Game started");
