@@ -84,6 +84,7 @@ function createWorld() {
     const newWorm = move(world.worm, world.direction);
     if (hitsWalls(newWorm, world)) {
       world.gameOver = true;
+      console.log("Game over");
     } else {
       world.worm = newWorm;
     }
