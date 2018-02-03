@@ -60,6 +60,16 @@ function createWorld() {
     return [newHead, ...newTail];
   }
 
+  function hitsTail(worm) {
+    const [head, ...tail] = worm;
+    for (const segment of tail) {
+      if (isEqual(head, segment)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   function hitsWalls(worm) {
     for (const segment of worm) {
       if (segment.x < 0 || segment.x >= world.width ||
@@ -77,7 +87,10 @@ function createWorld() {
   world.changeDirection = (direction) => {
     const turn180 = isEqual(sumVectors(world.direction, direction), {x: 0, y: 0});
     if (!turn180 || world.worm.length === 1) {
-      world.direction = direction;
+      // Do not update the direction immediately, but only during
+      // the next simulation tick. Otherwise it would be possible to
+      // do a 180 turn by pressing two arrows within one tick.
+      world.newDirection = direction;
     }
   };
 
@@ -85,9 +98,14 @@ function createWorld() {
     if (world.gameOver) {
       return;
     }
+    if (world.newDirection) {
+      world.direction = world.newDirection;
+      world.newDirection = null;
+    }
+
     const oldWorm = world.worm;
     const newWorm = move(oldWorm, world.direction);
-    if (hitsWalls(newWorm)) {
+    if (hitsWalls(newWorm) || hitsTail(newWorm)) {
       world.gameOver = true;
       console.log("Game over");
 
