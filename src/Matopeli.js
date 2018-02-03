@@ -52,7 +52,6 @@ function renderWorld(world, canvas) {
 }
 
 function initGame(canvas) {
-  console.log("Start game");
   const world = createWorld();
 
   const rendererHz = 60;
@@ -60,6 +59,23 @@ function initGame(canvas) {
 
   const simulationHz = 10;
   setInterval(() => simulateWorld(world), 1000.0 / simulationHz);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowUp') {
+      world.direction = {x: 0, y: -1}
+    }
+    if (event.key === 'ArrowDown') {
+      world.direction = {x: 0, y: 1}
+    }
+    if (event.key === 'ArrowLeft') {
+      world.direction = {x: -1, y: 0}
+    }
+    if (event.key === 'ArrowRight') {
+      world.direction = {x: 1, y: 0}
+    }
+  });
+
+  console.log("Game started");
 }
 
 class Matopeli extends Component {
