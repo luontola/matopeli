@@ -108,7 +108,7 @@ function createWorld() {
     world.pendingMoves.push(direction);
   };
 
-  world.simulate = () => {
+  world.simulate = (listener) => {
     if (world.gameOver) {
       return;
     }
@@ -121,14 +121,14 @@ function createWorld() {
     const newWorm = move(oldWorm, world.direction);
     if (hitsWalls(newWorm) || hitsTail(newWorm)) {
       world.gameOver = true;
-      console.log("Game over");
+      listener.gameOver();
 
     } else if (eatsTheTarget(newWorm)) {
       const tail = oldWorm[oldWorm.length - 1];
       world.worm = [...newWorm, tail];
       world.score++;
       world.target = randomEmptyCell();
-      console.log(`Score: ${world.score}`);
+      listener.grow();
 
     } else {
       world.worm = newWorm;
@@ -200,14 +200,24 @@ function renderWorld(world, canvas) {
 
 // Main
 
-function initGame(canvas) {
+function initGame(canvas, sounds) {
+  const listener = {
+    gameOver() {
+      console.log("Game Over");
+      sounds.gameOver();
+    },
+    grow() {
+      console.log(`Score: ${world.score}`);
+      sounds.grow();
+    }
+  };
   let world = createWorld();
 
   const rendererHz = 60;
   setInterval(() => renderWorld(world, canvas), 1000.0 / rendererHz);
 
   const simulationHz = 6;
-  setInterval(() => world.simulate(), 1000.0 / simulationHz);
+  setInterval(() => world.simulate(listener), 1000.0 / simulationHz);
 
   document.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
@@ -225,21 +235,33 @@ function initGame(canvas) {
     }
     event.preventDefault(); // prevent game keys from scrolling the window
   });
-
-  console.log("Game started");
 }
 
 class Matopeli extends Component {
   canvas = null;
+  growSound = null;
+  gameOverSound = null;
 
   componentDidMount() {
-    initGame(this.canvas)
+    const sounds = {
+      grow: () => this.growSound.play(),
+      gameOver: () => this.gameOverSound.play(),
+    };
+    initGame(this.canvas, sounds);
   }
 
   render() {
-    return (
+    return <React.Fragment>
       <canvas className="matopeli" ref={element => this.canvas = element}/>
-    );
+
+      <audio ref={element => this.growSound = element}>
+        <source src="audio/grow.mp3" type="audio/mpeg"/>
+      </audio>
+
+      <audio ref={element => this.gameOverSound = element}>
+        <source src="audio/gameover.mp3" type="audio/mpeg"/>
+      </audio>
+    </React.Fragment>;
   }
 }
 
