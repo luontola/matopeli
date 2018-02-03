@@ -79,6 +79,9 @@ function hitsWalls(worm, world) {
 }
 
 function simulateWorld(world) {
+  if (world.gameOver) {
+    return;
+  }
   const newWorm = move(world.worm, world.direction);
   if (hitsWalls(newWorm, world)) {
     world.gameOver = true;
@@ -137,7 +140,7 @@ function renderWorld(world, canvas) {
 // Main
 
 function initGame(canvas) {
-  const world = createWorld();
+  let world = createWorld();
 
   const rendererHz = 60;
   setInterval(() => renderWorld(world, canvas), 1000.0 / rendererHz);
@@ -146,21 +149,20 @@ function initGame(canvas) {
   setInterval(() => simulateWorld(world), 1000.0 / simulationHz);
 
   document.addEventListener('keydown', (event) => {
-    if (world.gameOver) {
-      return; // prevent any further input
+    if (event.code === 'Space') {
+      world = createWorld();
+    } else if (event.code === 'ArrowUp') {
+      world.direction = UP;
+    } else if (event.code === 'ArrowDown') {
+      world.direction = DOWN;
+    } else if (event.code === 'ArrowLeft') {
+      world.direction = LEFT;
+    } else if (event.code === 'ArrowRight') {
+      world.direction = RIGHT;
+    } else {
+      return;
     }
-    if (event.key === 'ArrowUp') {
-      world.direction = UP
-    }
-    if (event.key === 'ArrowDown') {
-      world.direction = DOWN
-    }
-    if (event.key === 'ArrowLeft') {
-      world.direction = LEFT
-    }
-    if (event.key === 'ArrowRight') {
-      world.direction = RIGHT
-    }
+    event.preventDefault(); // prevent game keys from scrolling the window 
   });
 
   console.log("Game started");
