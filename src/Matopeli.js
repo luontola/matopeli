@@ -15,7 +15,22 @@ function createWorld() {
   return world;
 }
 
+function sumVectors(v1, v2) {
+  return {
+    x: v1.x + v2.x,
+    y: v1.y + v2.y,
+  }
+}
+
+function move(worm, direction) {
+  const head = worm[0];
+  const newHead = sumVectors(head, direction);
+  const newTail = worm.slice(0, -1); // TODO: not tested
+  return [newHead, ...newTail];
+}
+
 function simulateWorld(world) {
+  world.worm = move(world.worm, world.direction);
 }
 
 function renderWorld(world, canvas) {
