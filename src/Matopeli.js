@@ -156,13 +156,21 @@ function renderWorld(world, canvas) {
   // game over
   if (world.gameOver) {
     ctx.font = 'bold 48px sans-serif';
-    ctx.fillStyle = '#0000FF';
     ctx.textAlign = 'center';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 8;
+    ctx.lineJoin = 'round';
+    ctx.strokeText('Game Over', canvasWidth / 2, canvasHeight / 2);
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillText('Game Over', canvasWidth / 2, canvasHeight / 2);
 
     ctx.font = '22px sans-serif';
-    ctx.fillStyle = '#0000FF';
     ctx.textAlign = 'center';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 6;
+    ctx.lineJoin = 'round';
+    ctx.strokeText(`Score: ${world.score}`, canvasWidth / 2, canvasHeight / 2 + 36);
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillText(`Score: ${world.score}`, canvasWidth / 2, canvasHeight / 2 + 36);
   }
 }
