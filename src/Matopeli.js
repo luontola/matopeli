@@ -1,6 +1,11 @@
 import React, {Component} from 'react';
 import './Matopeli.css';
 
+const UP = {x: 0, y: -1};
+const DOWN = {x: 0, y: 1};
+const LEFT = {x: -1, y: 0};
+const RIGHT = {x: 1, y: 0};
+
 function createWorld() {
   const world = {
     width: 30,
@@ -62,16 +67,16 @@ function initGame(canvas) {
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowUp') {
-      world.direction = {x: 0, y: -1}
+      world.direction = UP
     }
     if (event.key === 'ArrowDown') {
-      world.direction = {x: 0, y: 1}
+      world.direction = DOWN
     }
     if (event.key === 'ArrowLeft') {
-      world.direction = {x: -1, y: 0}
+      world.direction = LEFT
     }
     if (event.key === 'ArrowRight') {
-      world.direction = {x: 1, y: 0}
+      world.direction = RIGHT
     }
   });
 
