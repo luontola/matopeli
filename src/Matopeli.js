@@ -10,8 +10,8 @@ const RIGHT = {x: 1, y: 0};
 
 function createWorld() {
   const world = {
-    width: 30,
-    height: 20,
+    width: 15,
+    height: 10,
   };
   const allCells = [];
   for (let x = 0; x < world.width; x++) {
@@ -21,8 +21,8 @@ function createWorld() {
   }
 
   world.worm = [{
-    x: world.width / 2,
-    y: world.height / 2,
+    x: Math.floor(world.width / 2),
+    y: Math.floor(world.height / 2),
   }];
   world.direction = {x: 1, y: 0};
   world.score = 0;
@@ -176,7 +176,7 @@ function initGame(canvas) {
   const rendererHz = 60;
   setInterval(() => renderWorld(world, canvas), 1000.0 / rendererHz);
 
-  const simulationHz = 10;
+  const simulationHz = 6;
   setInterval(() => world.simulate(), 1000.0 / simulationHz);
 
   document.addEventListener('keydown', (event) => {
