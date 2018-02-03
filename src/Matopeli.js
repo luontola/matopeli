@@ -87,7 +87,11 @@ function createWorld() {
 
   function canTurnTo(direction) {
     const turn180 = isEqual(sumVectors(world.direction, direction), {x: 0, y: 0});
-    return !turn180 || world.worm.length === 1;
+    if (turn180 && world.worm.length > 1) {
+      return false;
+    }
+    const forward = isEqual(world.direction, direction);
+    return !forward;
   }
 
   function nextValidMove() {
