@@ -76,7 +76,7 @@ function createWorld() {
 
   world.changeDirection = (direction) => {
     const turn180 = isEqual(sumVectors(world.direction, direction), {x: 0, y: 0});
-    if (!turn180) {
+    if (!turn180 || world.worm.length === 1) {
       world.direction = direction;
     }
   };
