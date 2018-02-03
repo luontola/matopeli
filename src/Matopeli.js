@@ -15,17 +15,17 @@ function createWorld() {
   };
   const allCells = [];
   for (let x = 0; x < world.width; x++) {
-    for (let y = 0; y < world.width; y++) {
+    for (let y = 0; y < world.height; y++) {
       allCells.push({x, y});
     }
   }
 
-  const head = {
+  world.worm = [{
     x: world.width / 2,
     y: world.height / 2,
-  };
-  world.worm = [head];
+  }];
   world.direction = {x: 1, y: 0};
+  world.score = 0;
   world.target = randomEmptyCell();
 
   function sumVectors(v1, v2) {
@@ -60,7 +60,7 @@ function createWorld() {
     return [newHead, ...newTail];
   }
 
-  function hitsWalls(worm, world) {
+  function hitsWalls(worm) {
     for (const segment of worm) {
       if (segment.x < 0 || segment.x >= world.width ||
         segment.y < 0 || segment.y >= world.height) {
@@ -68,6 +68,10 @@ function createWorld() {
       }
     }
     return false;
+  }
+
+  function eatsTheTarget(worm) {
+    return isEqual(worm[0], world.target);
   }
 
   world.changeDirection = (direction) => {
@@ -81,10 +85,19 @@ function createWorld() {
     if (world.gameOver) {
       return;
     }
-    const newWorm = move(world.worm, world.direction);
-    if (hitsWalls(newWorm, world)) {
+    const oldWorm = world.worm;
+    const newWorm = move(oldWorm, world.direction);
+    if (hitsWalls(newWorm)) {
       world.gameOver = true;
       console.log("Game over");
+
+    } else if (eatsTheTarget(newWorm)) {
+      const tail = oldWorm[oldWorm.length - 1];
+      world.worm = [...newWorm, tail];
+      world.score++;
+      world.target = randomEmptyCell();
+      console.log(`Score: ${world.score}`);
+
     } else {
       world.worm = newWorm;
     }
@@ -132,7 +145,7 @@ function renderWorld(world, canvas) {
     ctx.font = '22px sans-serif';
     ctx.fillStyle = '#0000FF';
     ctx.textAlign = 'center';
-    ctx.fillText(`Score: ${world.worm.length}`, canvasWidth / 2, canvasHeight / 2 + 36);
+    ctx.fillText(`Score: ${world.score}`, canvasWidth / 2, canvasHeight / 2 + 36);
   }
 }
 
