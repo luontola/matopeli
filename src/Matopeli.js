@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
 import './Matopeli.css';
+import isEqual from "lodash/fp/isEqual";
+import random from "lodash/fp/random";
 
 const UP = {x: 0, y: -1};
 const DOWN = {x: 0, y: 1};
@@ -11,12 +13,38 @@ function createWorld() {
     width: 30,
     height: 20,
   };
+  const allPositions = [];
+  for (let x = 0; x < world.width; x++) {
+    for (let y = 0; y < world.width; y++) {
+      allPositions.push({x, y});
+    }
+  }
+
   const head = {
     x: world.width / 2,
     y: world.height / 2,
   };
   world.worm = [head];
   world.direction = {x: 1, y: 0};
+
+  world.isEmpty = (position) => {
+    for (const segment of world.worm) {
+      if (isEqual(segment, position)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  world.addTarget = () => {
+    const emptyPositions = allPositions.filter(world.isEmpty);
+    if (emptyPositions.length > 0) {
+      const randomIndex = random(0, emptyPositions.length);
+      world.target = emptyPositions[randomIndex];
+    }
+  };
+  world.addTarget();
+
   return world;
 }
 
@@ -41,9 +69,9 @@ function move(worm, direction) {
 }
 
 function hitsWalls(worm, world) {
-  for (const block of worm) {
-    if (block.x < 0 || block.x >= world.width ||
-      block.y < 0 || block.y >= world.height) {
+  for (const segment of worm) {
+    if (segment.x < 0 || segment.x >= world.width ||
+      segment.y < 0 || segment.y >= world.height) {
       return true;
     }
   }
@@ -75,8 +103,20 @@ function renderWorld(world, canvas) {
 
   // worm
   ctx.fillStyle = '#000000';
-  for (const block of world.worm) {
-    ctx.fillRect(block.x * cellWidth, block.y * cellHeight, cellWidth, cellHeight);
+  for (const segment of world.worm) {
+    ctx.fillRect(segment.x * cellWidth, segment.y * cellHeight, cellWidth, cellHeight);
+  }
+
+  // target
+  if (world.target) {
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(
+      world.target.x * cellWidth + cellWidth / 2,
+      world.target.y * cellHeight + cellHeight / 2,
+      cellWidth * 0.3,
+      0, 2 * Math.PI);
+    ctx.fill();
   }
 
   // game over
