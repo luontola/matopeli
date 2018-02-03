@@ -25,6 +25,7 @@ function createWorld() {
     y: Math.floor(world.height / 2),
   }];
   world.direction = {x: 1, y: 0};
+  world.pendingMoves = [];
   world.score = 0;
   world.target = randomEmptyCell();
 
@@ -84,23 +85,32 @@ function createWorld() {
     return isEqual(worm[0], world.target);
   }
 
-  world.changeDirection = (direction) => {
+  function canTurnTo(direction) {
     const turn180 = isEqual(sumVectors(world.direction, direction), {x: 0, y: 0});
-    if (!turn180 || world.worm.length === 1) {
-      // Do not update the direction immediately, but only during
-      // the next simulation tick. Otherwise it would be possible to
-      // do a 180 turn by pressing two arrows within one tick.
-      world.newDirection = direction;
+    return !turn180 || world.worm.length === 1;
+  }
+
+  function nextValidMove() {
+    while (world.pendingMoves.length > 0) {
+      const nextMove = world.pendingMoves.shift();
+      if (nextMove && canTurnTo(nextMove)) {
+        return nextMove;
+      }
     }
+    return null;
+  }
+
+  world.changeDirection = (direction) => {
+    world.pendingMoves.push(direction);
   };
 
   world.simulate = () => {
     if (world.gameOver) {
       return;
     }
-    if (world.newDirection) {
-      world.direction = world.newDirection;
-      world.newDirection = null;
+    const newDirection = nextValidMove();
+    if (newDirection) {
+      world.direction = newDirection;
     }
 
     const oldWorm = world.worm;
