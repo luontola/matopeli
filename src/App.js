@@ -11,6 +11,8 @@ class App extends Component {
         </header>
         <p className="App-intro">Kerää palloja törmäämättä mihinkään</p>
         <Matopeli/>
+        <p className="App-controls">Käänny: ← ↑ → ↓
+          <br/>Uusi peli: välilyönti</p>
       </div>
     );
   }
