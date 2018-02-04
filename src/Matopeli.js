@@ -15,7 +15,7 @@ const State = {
   GAME_OVER: 'GAME_OVER',
 };
 
-function createWorld() {
+function createWorld(listener) {
   const world = {
     width: 15,
     height: 10,
@@ -118,13 +118,14 @@ function createWorld() {
     world.pendingMoves = [];
     world.score = 0;
     world.target = randomEmptyCell();
+    listener.start();
   };
 
   world.changeDirection = (direction) => {
     world.pendingMoves.push(direction);
   };
 
-  world.simulate = (listener) => {
+  world.simulate = () => {
     if (world.state !== State.RUNNING) {
       return;
     }
@@ -237,16 +238,20 @@ function renderWorld(world, canvas, timestamp) {
 
 function initGame(canvas, sounds) {
   const listener = {
-    gameOver() {
-      console.log("Game Over");
-      sounds.gameOver();
+    start() {
+      console.log("Game Started");
+      sounds.start();
     },
     grow() {
       console.log(`Score: ${world.score}`);
       sounds.grow();
-    }
+    },
+    gameOver() {
+      console.log("Game Over");
+      sounds.gameOver();
+    },
   };
-  let world = createWorld();
+  let world = createWorld(listener);
 
   const render = (timestamp) => {
     renderWorld(world, canvas, timestamp);
@@ -255,7 +260,7 @@ function initGame(canvas, sounds) {
   window.requestAnimationFrame(render);
 
   const simulationHz = 6;
-  setInterval(() => world.simulate(listener), 1000.0 / simulationHz);
+  setInterval(() => world.simulate(), 1000.0 / simulationHz);
 
   document.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
@@ -277,11 +282,13 @@ function initGame(canvas, sounds) {
 
 class Matopeli extends Component {
   canvas = null;
+  startSound = null;
   growSound = null;
   gameOverSound = null;
 
   componentDidMount() {
     const sounds = {
+      start: () => this.startSound.play(),
       grow: () => this.growSound.play(),
       gameOver: () => this.gameOverSound.play(),
     };
@@ -291,6 +298,10 @@ class Matopeli extends Component {
   render() {
     return <React.Fragment>
       <canvas className="matopeli" ref={element => this.canvas = element}/>
+
+      <audio ref={element => this.startSound = element}>
+        <source src="audio/start.mp3" type="audio/mpeg"/>
+      </audio>
 
       <audio ref={element => this.growSound = element}>
         <source src="audio/grow.mp3" type="audio/mpeg"/>
