@@ -59,7 +59,7 @@ function createWorld(listener) {
     if (emptyCells.length <= 0) {
       return null;
     }
-    const randomIndex = random(0, emptyCells.length);
+    const randomIndex = random(0, emptyCells.length - 1);
     return emptyCells[randomIndex];
   }
 
