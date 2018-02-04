@@ -3,31 +3,31 @@ import './Matopeli.css';
 import isEqual from "lodash/fp/isEqual";
 import random from "lodash/fp/random";
 
-const UP = {x: 0, y: -1};
-const DOWN = {x: 0, y: 1};
-const LEFT = {x: -1, y: 0};
-const RIGHT = {x: 1, y: 0};
+const Direction = {
+  UP: {x: 0, y: -1},
+  DOWN: {x: 0, y: 1},
+  LEFT: {x: -1, y: 0},
+  RIGHT: {x: 1, y: 0},
+};
+const State = {
+  INITIAL: 'INITIAL',
+  RUNNING: 'RUNNING',
+  GAME_OVER: 'GAME_OVER',
+};
 
 function createWorld() {
   const world = {
     width: 15,
     height: 10,
+    state: State.INITIAL,
   };
+
   const allCells = [];
   for (let x = 0; x < world.width; x++) {
     for (let y = 0; y < world.height; y++) {
       allCells.push({x, y});
     }
   }
-
-  world.worm = [{
-    x: Math.floor(world.width / 2),
-    y: Math.floor(world.height / 2),
-  }];
-  world.direction = {x: 1, y: 0};
-  world.pendingMoves = [];
-  world.score = 0;
-  world.target = randomEmptyCell();
 
   function sumVectors(v1, v2) {
     return {
@@ -104,12 +104,28 @@ function createWorld() {
     return null;
   }
 
+  world.start = () => {
+    if (world.state !== State.INITIAL
+      && world.state !== State.GAME_OVER) {
+      return;
+    }
+    world.state = State.RUNNING;
+    world.worm = [{
+      x: Math.floor(world.width / 2),
+      y: Math.floor(world.height / 2),
+    }];
+    world.direction = Direction.RIGHT;
+    world.pendingMoves = [];
+    world.score = 0;
+    world.target = randomEmptyCell();
+  };
+
   world.changeDirection = (direction) => {
     world.pendingMoves.push(direction);
   };
 
   world.simulate = (listener) => {
-    if (world.gameOver) {
+    if (world.state !== State.RUNNING) {
       return;
     }
     const newDirection = nextValidMove();
@@ -120,7 +136,7 @@ function createWorld() {
     const oldWorm = world.worm;
     const newWorm = move(oldWorm, world.direction);
     if (hitsWalls(newWorm) || hitsTail(newWorm)) {
-      world.gameOver = true;
+      world.state = State.GAME_OVER;
       listener.gameOver();
 
     } else if (eatsTheTarget(newWorm)) {
@@ -160,26 +176,41 @@ function renderWorld(world, canvas) {
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-  // worm
-  ctx.fillStyle = '#000000';
-  for (const segment of world.worm) {
-    ctx.fillRect(segment.x * cellWidth, segment.y * cellHeight, cellWidth, cellHeight);
-  }
 
-  // target
-  if (world.target) {
+  const state = world.state;
+  if (state === State.RUNNING
+    || state === State.GAME_OVER) {
+
+    // worm
     ctx.fillStyle = '#000000';
-    ctx.beginPath();
-    ctx.arc(
-      world.target.x * cellWidth + cellWidth / 2,
-      world.target.y * cellHeight + cellHeight / 2,
-      cellWidth * 0.3,
-      0, 2 * Math.PI);
-    ctx.fill();
+    for (const segment of world.worm) {
+      ctx.fillRect(segment.x * cellWidth, segment.y * cellHeight, cellWidth, cellHeight);
+    }
+
+    // target
+    if (world.target) {
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(
+        world.target.x * cellWidth + cellWidth / 2,
+        world.target.y * cellHeight + cellHeight / 2,
+        cellWidth * 0.3,
+        0, 2 * Math.PI);
+      ctx.fill();
+    }
   }
 
-  // game over
-  if (world.gameOver) {
+  // texts
+  if (state === State.INITIAL) {
+    drawOutlinedText(ctx, {
+      text: "Press Space to Start",
+      font: '26px sans-serif',
+      lineWidth: 6,
+      x: canvasWidth / 2,
+      y: canvasHeight / 2,
+    });
+  }
+  if (state === State.GAME_OVER) {
     drawOutlinedText(ctx, {
       text: "Game Over",
       font: 'bold 48px sans-serif',
@@ -224,15 +255,15 @@ function initGame(canvas, sounds) {
 
   document.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
-      world = createWorld();
+      world.start();
     } else if (event.code === 'ArrowUp') {
-      world.changeDirection(UP);
+      world.changeDirection(Direction.UP);
     } else if (event.code === 'ArrowDown') {
-      world.changeDirection(DOWN);
+      world.changeDirection(Direction.DOWN);
     } else if (event.code === 'ArrowLeft') {
-      world.changeDirection(LEFT);
+      world.changeDirection(Direction.LEFT);
     } else if (event.code === 'ArrowRight') {
-      world.changeDirection(RIGHT);
+      world.changeDirection(Direction.RIGHT);
     } else {
       return;
     }
