@@ -165,7 +165,7 @@ function drawOutlinedText(ctx, {text, x, y, font, lineWidth}) {
   ctx.fillText(text, x, y);
 }
 
-function renderWorld(world, canvas) {
+function renderWorld(world, canvas, timestamp) {
   const ctx = canvas.getContext('2d');
   const canvasWidth = canvas.width = canvas.clientWidth;
   const canvasHeight = canvas.height = canvas.clientHeight;
@@ -202,13 +202,17 @@ function renderWorld(world, canvas) {
 
   // texts
   if (state === State.INITIAL) {
-    drawOutlinedText(ctx, {
-      text: "Press Space to Start",
-      font: '26px sans-serif',
-      lineWidth: 6,
-      x: canvasWidth / 2,
-      y: canvasHeight / 2,
-    });
+    const animationLength = 1000;
+    const animationStage = (timestamp % animationLength / animationLength);
+    if (animationStage < 0.666) {
+      drawOutlinedText(ctx, {
+        text: "Press Space to Start",
+        font: '26px sans-serif',
+        lineWidth: 6,
+        x: canvasWidth / 2,
+        y: canvasHeight / 2,
+      });
+    }
   }
   if (state === State.GAME_OVER) {
     drawOutlinedText(ctx, {
@@ -244,8 +248,8 @@ function initGame(canvas, sounds) {
   };
   let world = createWorld();
 
-  const render = () => {
-    renderWorld(world, canvas);
+  const render = (timestamp) => {
+    renderWorld(world, canvas, timestamp);
     window.requestAnimationFrame(render);
   };
   window.requestAnimationFrame(render);
