@@ -14,12 +14,21 @@ const State = {
   RUNNING: 'RUNNING',
   GAME_OVER: 'GAME_OVER',
 };
+const speedOptions = [
+  {name: "Sluggish Speed", simulationHz: 2},
+  {name: "Slow Speed", simulationHz: 4},
+  {name: "Normal Speed", simulationHz: 6, default: true},
+  {name: "Fast Speed", simulationHz: 10},
+  {name: "Ridiculous Speed", simulationHz: 15},
+  {name: "Ludicrous Speed", simulationHz: 25},
+];
 
 function createWorld(listener) {
   const world = {
     width: 15,
     height: 10,
     state: State.INITIAL,
+    speed: speedOptions.findIndex(v => v.default),
   };
 
   const allCells = [];
@@ -104,6 +113,37 @@ function createWorld(listener) {
     return null;
   }
 
+  world.currentSpeed = () => {
+    return speedOptions[world.speed];
+  };
+
+  world.increaseSpeed = () => {
+    if (world.state !== State.INITIAL
+      && world.state !== State.GAME_OVER) {
+      return;
+    }
+    const newSpeed = world.speed + 1;
+    if (newSpeed < speedOptions.length) {
+      world.state = State.INITIAL;
+      world.speed = newSpeed;
+      console.log(world.currentSpeed().name);
+    }
+  };
+
+  world.decreaseSpeed = () => {
+    if (world.state !== State.INITIAL
+      && world.state !== State.GAME_OVER) {
+      return;
+    }
+    const newSpeed = world.speed - 1;
+    if (newSpeed >= 0) {
+      world.state = State.INITIAL;
+      world.speed = newSpeed;
+      console.log(world.currentSpeed().name);
+    }
+  };
+
+  let gameLoopInterval;
   world.start = () => {
     if (world.state !== State.INITIAL
       && world.state !== State.GAME_OVER) {
@@ -118,6 +158,7 @@ function createWorld(listener) {
     world.pendingMoves = [];
     world.score = 0;
     world.target = randomEmptyCell();
+    gameLoopInterval = setInterval(world.simulate, 1000.0 / world.currentSpeed().simulationHz);
     listener.start();
   };
 
@@ -138,6 +179,7 @@ function createWorld(listener) {
     const newWorm = move(oldWorm, world.direction);
     if (hitsWalls(newWorm) || hitsTail(newWorm)) {
       world.state = State.GAME_OVER;
+      clearInterval(gameLoopInterval);
       listener.gameOver();
 
     } else if (eatsTheTarget(newWorm)) {
@@ -155,9 +197,9 @@ function createWorld(listener) {
   return world;
 }
 
-function drawOutlinedText(ctx, {text, x, y, font, lineWidth}) {
+function drawOutlinedText(ctx, {text, x, y, textAlign, font, lineWidth}) {
   ctx.font = font;
-  ctx.textAlign = 'center';
+  ctx.textAlign = textAlign;
   ctx.strokeStyle = '#000000';
   ctx.lineWidth = lineWidth;
   ctx.lineJoin = 'round';
@@ -210,6 +252,7 @@ function renderWorld(world, canvas, timestamp) {
         text: "Press Space to Start",
         font: '26px sans-serif',
         lineWidth: 6,
+        textAlign: 'center',
         x: canvasWidth / 2,
         y: canvasHeight / 2,
       });
@@ -220,6 +263,7 @@ function renderWorld(world, canvas, timestamp) {
       text: "Game Over",
       font: 'bold 48px sans-serif',
       lineWidth: 8,
+      textAlign: 'center',
       x: canvasWidth / 2,
       y: canvasHeight / 2,
     });
@@ -227,8 +271,20 @@ function renderWorld(world, canvas, timestamp) {
       text: `Score: ${world.score}`,
       font: '22px sans-serif',
       lineWidth: 6,
+      textAlign: 'center',
       x: canvasWidth / 2,
       y: canvasHeight / 2 + 36,
+    });
+  }
+  if (state === State.INITIAL
+    || state === State.GAME_OVER) {
+    drawOutlinedText(ctx, {
+      text: world.currentSpeed().name,
+      font: '18px sans-serif',
+      lineWidth: 6,
+      textAlign: 'left',
+      x: 10,
+      y: 22,
     });
   }
 }
@@ -259,12 +315,13 @@ function initGame(canvas, sounds) {
   };
   window.requestAnimationFrame(render);
 
-  const simulationHz = 6;
-  setInterval(() => world.simulate(), 1000.0 / simulationHz);
-
   document.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
       world.start();
+    } else if (event.key === '+') {
+      world.increaseSpeed();
+    } else if (event.key === '-') {
+      world.decreaseSpeed();
     } else if (event.code === 'ArrowUp') {
       world.changeDirection(Direction.UP);
     } else if (event.code === 'ArrowDown') {
@@ -296,21 +353,23 @@ class Matopeli extends Component {
   }
 
   render() {
-    return <React.Fragment>
-      <canvas className="matopeli" ref={element => this.canvas = element}/>
+    return (
+      <React.Fragment>
+        <canvas className="matopeli" ref={element => this.canvas = element}/>
 
-      <audio ref={element => this.startSound = element}>
-        <source src="audio/start.mp3" type="audio/mpeg"/>
-      </audio>
+        <audio ref={element => this.startSound = element}>
+          <source src="audio/start.mp3" type="audio/mpeg"/>
+        </audio>
 
-      <audio ref={element => this.growSound = element}>
-        <source src="audio/grow.mp3" type="audio/mpeg"/>
-      </audio>
+        <audio ref={element => this.growSound = element}>
+          <source src="audio/grow.mp3" type="audio/mpeg"/>
+        </audio>
 
-      <audio ref={element => this.gameOverSound = element}>
-        <source src="audio/gameover.mp3" type="audio/mpeg"/>
-      </audio>
-    </React.Fragment>;
+        <audio ref={element => this.gameOverSound = element}>
+          <source src="audio/gameover.mp3" type="audio/mpeg"/>
+        </audio>
+      </React.Fragment>
+    );
   }
 }
 

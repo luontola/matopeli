@@ -12,7 +12,9 @@ class App extends Component {
         <p className="App-intro">Kerää palloja törmäämättä mihinkään</p>
         <Matopeli/>
         <p className="App-controls">Käänny: ← ↑ → ↓
-          <br/>Uusi peli: välilyönti</p>
+          <br/>Uusi peli: välilyönti
+          <br/>Muuta nopeutta: + -
+        </p>
       </div>
     );
   }
