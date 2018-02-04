@@ -187,6 +187,10 @@ function createWorld(listener) {
       world.worm = [...newWorm, tail];
       world.score++;
       world.target = randomEmptyCell();
+      if (!world.target) {
+        world.state = State.GAME_OVER;
+        console.log("Game Completed");
+      }
       listener.grow();
 
     } else {
