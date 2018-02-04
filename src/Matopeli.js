@@ -213,8 +213,11 @@ function initGame(canvas, sounds) {
   };
   let world = createWorld();
 
-  const rendererHz = 60;
-  setInterval(() => renderWorld(world, canvas), 1000.0 / rendererHz);
+  const render = () => {
+    renderWorld(world, canvas);
+    window.requestAnimationFrame(render);
+  };
+  window.requestAnimationFrame(render);
 
   const simulationHz = 6;
   setInterval(() => world.simulate(listener), 1000.0 / simulationHz);
